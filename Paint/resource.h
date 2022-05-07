@@ -100,13 +100,22 @@
 #define ID_TOOL_ZOOMIN                  32804
 #define ID_BUTTON32805                  32805
 #define ID_TOOL_ZOOMOUT                 32806
+#define ID_TOOL_UP                      32807
+#define ID_TOOL_LEFT                    32809
+#define ID_TOOL_RIGHT                   32810
+#define ID_TOOL_DOWN                    32811
+#define ID_TOOL_ROTATE                  32812
+#define ID_TOOL_CONTRAROTATE            32813
+#define ID_TOOL_XSHEAR                  32814
+#define ID_BUTTON32815                  32815
+#define ID_TOOL_YSHEAR                  32815
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         32807
+#define _APS_NEXT_COMMAND_VALUE         32816
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

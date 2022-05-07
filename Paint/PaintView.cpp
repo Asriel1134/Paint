@@ -12,6 +12,8 @@
 
 #include "PaintDoc.h"
 #include "PaintView.h"
+#define _USE_MATH_DEFINES
+#include "math.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,6 +50,14 @@ BEGIN_MESSAGE_MAP(CPaintView, CView)
 	ON_COMMAND(ID_TOOL_CHOOSE, &CPaintView::OnToolChoose)
 	ON_COMMAND(ID_TOOL_ZOOMIN, &CPaintView::OnToolZoomin)
 	ON_COMMAND(ID_TOOL_ZOOMOUT, &CPaintView::OnToolZoomout)
+	ON_COMMAND(ID_TOOL_DOWN, &CPaintView::OnToolDown)
+	ON_COMMAND(ID_TOOL_LEFT, &CPaintView::OnToolLeft)
+	ON_COMMAND(ID_TOOL_UP, &CPaintView::OnToolUp)
+	ON_COMMAND(ID_TOOL_RIGHT, &CPaintView::OnToolRight)
+	ON_COMMAND(ID_TOOL_CONTRAROTATE, &CPaintView::OnToolContrarotate)
+	ON_COMMAND(ID_TOOL_ROTATE, &CPaintView::OnToolRotate)
+	ON_COMMAND(ID_TOOL_XSHEAR, &CPaintView::OnToolXshear)
+	ON_COMMAND(ID_TOOL_YSHEAR, &CPaintView::OnToolYshear)
 END_MESSAGE_MAP()
 
 // CPaintView 构造/析构
@@ -295,6 +305,7 @@ void CPaintView::OnMouseMove(UINT nFlags, CPoint point)
 		// 防止起点和终点相同出现问题
 		moved = true;
 		// 确定直线终点
+
 		m_Endp = point;
 		// 复制兼容DC到客户区，以去掉之前的预览线段
 		CDC* pDC = GetDC();
@@ -303,7 +314,7 @@ void CPaintView::OnMouseMove(UINT nFlags, CPoint point)
 		pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_pMemDC, 0, 0, SRCCOPY);
 		chooseState = 1;
 		// 画预览线
-		CPen pen(PS_DASHDOT, 1, background);
+		CPen pen(PS_DASHDOT, 1, foreground);
 		pDC->SelectObject(&pen);
 		pDC->MoveTo(m_Startp.x, m_Startp.y);
 		pDC->LineTo(m_Endp.x, m_Startp.y);
@@ -398,16 +409,16 @@ void CPaintView::OnLButtonUp(UINT nFlags, CPoint point)
 			CRect rect;
 			GetClientRect(&rect);
 			pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_pMemDC, 0, 0, SRCCOPY);
-			CPen pen(PS_DASHDOT, 1, background);
-			pDC->SelectObject(&pen);
-			pDC->MoveTo(m_Startp.x, m_Startp.y);
-			pDC->LineTo(m_Endp.x, m_Startp.y);
-			pDC->LineTo(m_Endp.x, m_Endp.y);
-			pDC->LineTo(m_Startp.x, m_Endp.y);
-			pDC->LineTo(m_Startp.x, m_Startp.y);
 
-			m_cMemDC.BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, DSTINVERT);
-			m_cMemDC.BitBlt(m_Startp.x, m_Startp.y, m_Endp.x - m_Startp.x, m_Endp.y - m_Startp.y, &m_sMemDC, m_Startp.x, m_Startp.y, SRCCOPY);
+			//m_cMemDC.BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, DSTINVERT);
+			//m_cMemDC.BitBlt(m_Startp.x, m_Startp.y, m_Endp.x - m_Startp.x, m_Endp.y - m_Startp.y, &m_sMemDC, m_Startp.x, m_Startp.y, SRCCOPY);
+
+			P[0] = CPoint(m_Startp.x, m_Startp.y);
+			P[1] = CPoint(m_Endp.x, m_Startp.y);
+			P[2] = CPoint(m_Endp.x, m_Endp.y);
+			P[3] = CPoint(m_Startp.x, m_Endp.y);
+
+			Draw(pDC);
 
 			moved = false;
 			ReleaseDC(pDC);
@@ -429,7 +440,7 @@ BOOL CPaintView::PreTranslateMessage(MSG* pMsg)
 			CDC* pDC = GetDC();
 			CRect rect;
 			GetClientRect(&rect);
-			pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_cMemDC, 0, 0, SRCCOPY);
+			//pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_cMemDC, 0, 0, SRCCOPY);
 			m_sMemBitmap.DeleteObject();
 			m_sMemDC.DeleteDC();
 			m_cMemBitmap.DeleteObject();
@@ -524,17 +535,320 @@ void CPaintView::OnToolChoose()
 	moved = false;
 }
 
+void CPaintView::OnToolDown()
+{
+	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
+	Identity();
+	A[2][0] = 0;
+	A[2][1] = 10;
+	Trans();
+	Draw(pDC);
+}
+
+
+void CPaintView::OnToolLeft()
+{
+	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
+	Identity();
+	A[2][0] = -10;
+	A[2][1] = 0;
+	Trans();
+	Draw(pDC);
+}
+
+
+void CPaintView::OnToolUp()
+{
+	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
+	Identity();
+	A[2][0] = 0;
+	A[2][1] = -10;
+	Trans();
+	Draw(pDC);
+}
+
+
+void CPaintView::OnToolRight()
+{
+	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
+	Identity();
+	A[2][0] = 10;
+	A[2][1] = 0;
+	Trans();
+	Draw(pDC);
+}
+
+void CPaintView::OnToolContrarotate()
+{
+	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
+
+	pDC->SetMapMode(MM_ANISOTROPIC);//pDC自定义坐标系
+	pDC->SetWindowExt(rect.Width(), rect.Height());//设置窗口范围
+	pDC->SetViewportExt(rect.Width(), -rect.Height());//设置视区范围,x轴水平向右，y轴垂直向上
+	pDC->SetViewportOrg((P[0].x + P[2].x) / 2, (P[1].y + P[3].y) / 2);//客户区中心为原点
+
+	int dx = (P[0].x + P[2].x) / 2;
+	int dy = (P[1].y + P[3].y) / 2;
+
+	P[0].x -= dx;
+	P[0].y -= dy;
+	P[1].x -= dx;
+	P[1].y -= dy;
+	P[2].x -= dx;
+	P[2].y -= dy;
+	P[3].x -= dx;
+	P[3].y -= dy;
+
+	Identity();
+	A[0][0] = cos(M_PI * -15 / 180);
+	A[0][1] = sin(M_PI * -15 / 180);
+	A[1][0] = -sin(M_PI * -15 / 180);
+	A[1][1] = cos(M_PI * -15 / 180);
+
+	Trans();
+	Draw(pDC);
+
+	P[0].x += dx;
+	P[0].y += dy;
+	P[1].x += dx;
+	P[1].y += dy;
+	P[2].x += dx;
+	P[2].y += dy;
+	P[3].x += dx;
+	P[3].y += dy;
+}
+
+
+void CPaintView::OnToolRotate()
+{
+	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
+
+	pDC->SetMapMode(MM_ANISOTROPIC);//pDC自定义坐标系
+	pDC->SetWindowExt(rect.Width(), rect.Height());//设置窗口范围
+	pDC->SetViewportExt(rect.Width(), -rect.Height());//设置视区范围,x轴水平向右，y轴垂直向上
+	pDC->SetViewportOrg((P[0].x + P[2].x) / 2, (P[1].y + P[3].y) / 2);//客户区中心为原点
+
+	int dx = (P[0].x + P[2].x) / 2;
+	int dy = (P[1].y + P[3].y) / 2;
+
+	P[0].x -= dx;
+	P[0].y -= dy;
+	P[1].x -= dx;
+	P[1].y -= dy;
+	P[2].x -= dx;
+	P[2].y -= dy;
+	P[3].x -= dx;
+	P[3].y -= dy;
+
+	Identity();
+	A[0][0] = cos(M_PI * 15 / 180);
+	A[0][1] = sin(M_PI * 15 / 180);
+	A[1][0] = -sin(M_PI * 15 / 180);
+	A[1][1] = cos(M_PI * 15 / 180);
+
+	Trans();
+	Draw(pDC);
+
+	P[0].x += dx;
+	P[0].y += dy;
+	P[1].x += dx;
+	P[1].y += dy;
+	P[2].x += dx;
+	P[2].y += dy;
+	P[3].x += dx;
+	P[3].y += dy;
+}
+
+void CPaintView::OnToolXshear()
+{
+	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
+
+	pDC->SetMapMode(MM_ANISOTROPIC);//pDC自定义坐标系
+	pDC->SetWindowExt(rect.Width(), rect.Height());//设置窗口范围
+	pDC->SetViewportExt(rect.Width(), -rect.Height());//设置视区范围,x轴水平向右，y轴垂直向上
+	pDC->SetViewportOrg((P[0].x + P[2].x) / 2, (P[1].y + P[3].y) / 2);//客户区中心为原点
+
+	int dx = (P[0].x + P[2].x) / 2;
+	int dy = (P[1].y + P[3].y) / 2;
+
+	P[0].x -= dx;
+	P[0].y -= dy;
+	P[1].x -= dx;
+	P[1].y -= dy;
+	P[2].x -= dx;
+	P[2].y -= dy;
+	P[3].x -= dx;
+	P[3].y -= dy;
+
+	Identity();
+	A[1][0] = 0.1;
+
+	Trans();
+	Draw(pDC);
+
+	P[0].x += dx;
+	P[0].y += dy;
+	P[1].x += dx;
+	P[1].y += dy;
+	P[2].x += dx;
+	P[2].y += dy;
+	P[3].x += dx;
+	P[3].y += dy;
+}
+
+
+void CPaintView::OnToolYshear()
+{
+	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
+
+	pDC->SetMapMode(MM_ANISOTROPIC);//pDC自定义坐标系
+	pDC->SetWindowExt(rect.Width(), rect.Height());//设置窗口范围
+	pDC->SetViewportExt(rect.Width(), -rect.Height());//设置视区范围,x轴水平向右，y轴垂直向上
+	pDC->SetViewportOrg((P[0].x + P[2].x) / 2, (P[1].y + P[3].y) / 2);//客户区中心为原点
+
+	int dx = (P[0].x + P[2].x) / 2;
+	int dy = (P[1].y + P[3].y) / 2;
+
+	P[0].x -= dx;
+	P[0].y -= dy;
+	P[1].x -= dx;
+	P[1].y -= dy;
+	P[2].x -= dx;
+	P[2].y -= dy;
+	P[3].x -= dx;
+	P[3].y -= dy;
+
+	Identity();
+	A[0][1] = 0.1;
+
+	Trans();
+	Draw(pDC);
+
+	P[0].x += dx;
+	P[0].y += dy;
+	P[1].x += dx;
+	P[1].y += dy;
+	P[2].x += dx;
+	P[2].y += dy;
+	P[3].x += dx;
+	P[3].y += dy;
+}
 
 void CPaintView::OnToolZoomin()
 {
 	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
 
+	pDC->SetMapMode(MM_ANISOTROPIC);//pDC自定义坐标系
+	pDC->SetWindowExt(rect.Width(), rect.Height());//设置窗口范围
+	pDC->SetViewportExt(rect.Width(), -rect.Height());//设置视区范围,x轴水平向右，y轴垂直向上
+	pDC->SetViewportOrg((P[0].x + P[1].x) / 2, (P[1].y + P[2].y) / 2);//客户区中心为原点
+
+	int dx = (P[0].x + P[1].x) / 2;
+	int dy = (P[1].y + P[2].y) / 2;
+
+	P[0].x -= dx;
+	P[0].y -= dy;
+	P[1].x -= dx;
+	P[1].y -= dy;
+	P[2].x -= dx;
+	P[2].y -= dy;
+	P[3].x -= dx;
+	P[3].y -= dy;
+
+	Identity();
+	A[0][0] = 1.1;
+	A[1][1] = 1.1;
+	Trans();
+	Draw(pDC);
+
+	P[0].x += dx;
+	P[0].y += dy;
+	P[1].x += dx;
+	P[1].y += dy;
+	P[2].x += dx;
+	P[2].y += dy;
+	P[3].x += dx;
+	P[3].y += dy;
 }
 
 
 void CPaintView::OnToolZoomout()
 {
 	// TODO: 在此添加命令处理程序代码
+	CDC* pDC = GetDC();
+	CRect rect;
+	GetClientRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &m_sMemDC, 0, 0, SRCCOPY);
+
+	pDC->SetMapMode(MM_ANISOTROPIC);//pDC自定义坐标系
+	pDC->SetWindowExt(rect.Width(), rect.Height());//设置窗口范围
+	pDC->SetViewportExt(rect.Width(), -rect.Height());//设置视区范围,x轴水平向右，y轴垂直向上
+	pDC->SetViewportOrg((P[0].x + P[1].x) / 2, (P[1].y + P[2].y) / 2);//客户区中心为原点
+
+	int dx = (P[0].x + P[1].x) / 2;
+	int dy = (P[1].y + P[2].y) / 2;
+
+	P[0].x -= dx;
+	P[0].y -= dy;
+	P[1].x -= dx;
+	P[1].y -= dy;
+	P[2].x -= dx;
+	P[2].y -= dy;
+	P[3].x -= dx;
+	P[3].y -= dy;
+
+	Identity();
+	A[0][0] = 0.9;
+	A[1][1] = 0.9;
+	Trans();
+	Draw(pDC);
+
+	P[0].x += dx;
+	P[0].y += dy;
+	P[1].x += dx;
+	P[1].y += dy;
+	P[2].x += dx;
+	P[2].y += dy;
+	P[3].x += dx;
+	P[3].y += dy;
+
+	ReleaseDC(pDC);
 }
 
 
@@ -620,4 +934,34 @@ void CPaintView::OnRevoke()
 		history.pop();
 		delete pBits;
 	}
+}
+
+void CPaintView::Identity()
+{
+	A[0][0] = 1.0; A[0][1] = 0.0; A[0][2] = 0.0;
+	A[1][0] = 0.0; A[1][1] = 1.0; A[1][2] = 0.0;
+	A[2][0] = 0.0; A[2][1] = 0.0; A[2][2] = 1.0;
+}
+
+void CPaintView::Trans()
+{
+	double X[4], Y[4], C[4];
+	for (int i = 0; i < 4; i++)
+	{
+		X[i] = P[i].x * A[0][0] + P[i].y * A[1][0] + A[2][0];
+		Y[i] = P[i].x * A[0][1] + P[i].y * A[1][1] + A[2][1];
+		C[i] = P[i].x * A[0][2] + P[i].y * A[1][2] + A[2][2];
+		P[i].x = X[i] / C[i];
+		P[i].y = Y[i] / C[i];
+	}
+}
+
+void CPaintView::Draw(CDC* pDC) {
+	CPen pen(PS_DASHDOT, 1, foreground);
+	pDC->SelectObject(&pen);
+	pDC->MoveTo(P[0].x, P[0].y);
+	pDC->LineTo(P[1].x, P[1].y);
+	pDC->LineTo(P[2].x, P[2].y);
+	pDC->LineTo(P[3].x, P[3].y);
+	pDC->LineTo(P[0].x, P[0].y);
 }

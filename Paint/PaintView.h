@@ -57,6 +57,8 @@ private:
 	long foreground;
 	long background;
 	int currentTool;
+	double A[3][3];
+	CPoint P[4];
 	CPoint m_Startp;
 	CPoint m_Endp;
 	TOOLS Tools;
@@ -68,6 +70,7 @@ private:
 	// 保存选择前的位图
 	CDC m_sMemDC;
 	CBitmap m_sMemBitmap;
+	CDC m_DrawDC;
 
 public:
 	afx_msg void OnToolForeground();
@@ -75,8 +78,11 @@ public:
 	PBYTE GetPbits(BITMAP* bmpInfo);
 	void SaveHistory();
 	void SaveHistory(CBitmap* m_pMemBitmap);
+	void CPaintView::Trans();
+	void CPaintView::Draw(CDC* pDC);
 	afx_msg void OnToolLine();
 	afx_msg void OnRevoke();
+	void Identity();
 	afx_msg void OnToolPencil();
 	afx_msg void OnToolCircle();
 	afx_msg void OnToolRectangle();
@@ -94,6 +100,14 @@ private:
 	int chooseState;
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnToolDown();
+	afx_msg void OnToolLeft();
+	afx_msg void OnToolUp();
+	afx_msg void OnToolRight();
+	afx_msg void OnToolContrarotate();
+	afx_msg void OnToolRotate();
+	afx_msg void OnToolXshear();
+	afx_msg void OnToolYshear();
 };
 
 #ifndef _DEBUG  // PaintView.cpp 中的调试版本

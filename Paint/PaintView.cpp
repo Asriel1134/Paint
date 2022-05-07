@@ -621,23 +621,3 @@ void CPaintView::OnRevoke()
 		delete pBits;
 	}
 }
-
-void CPaintView::Identity()
-{
-	A[0][0] = 1.0; A[0][1] = 0.0; A[0][2] = 0.0;
-	A[1][0] = 0.0; A[1][1] = 1.0; A[1][2] = 0.0;
-	A[2][0] = 0.0; A[2][1] = 0.0; A[2][2] = 1.0;
-}
-
-void CPaintView::Trans()
-{
-	double X[4], Y[4], C[4];
-	for (int i = 0; i < 4; i++)
-	{
-		X[i] = P[i].x * A[0][0] + P[i].y * A[1][0] + P[i].w * A[2][0];
-		Y[i] = P[i].x * A[0][1] + P[i].y * A[1][1] + P[i].w * A[2][1];
-		C[i] = P[i].x * A[0][2] + P[i].y * A[1][2] + P[i].w * A[2][2];
-		P[i].x = X[i] / C[i];
-		P[i].y = Y[i] / C[i];
-		P[i].w = C[i] / C[i];
-	}

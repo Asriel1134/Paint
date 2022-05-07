@@ -57,7 +57,6 @@ private:
 	long foreground;
 	long background;
 	int currentTool;
-	double A[3][3];
 	CPoint m_Startp;
 	CPoint m_Endp;
 	TOOLS Tools;
@@ -76,10 +75,8 @@ public:
 	PBYTE GetPbits(BITMAP* bmpInfo);
 	void SaveHistory();
 	void SaveHistory(CBitmap* m_pMemBitmap);
-	void CPaintView::Trans();
 	afx_msg void OnToolLine();
 	afx_msg void OnRevoke();
-	void Identity();
 	afx_msg void OnToolPencil();
 	afx_msg void OnToolCircle();
 	afx_msg void OnToolRectangle();
